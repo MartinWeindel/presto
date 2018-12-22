@@ -67,10 +67,7 @@ public class TestKuduIntegrationIntegerColumns
         String createTable = "CREATE TABLE test_int (\n";
         createTable += "  id INT WITH (primary_key=true),\n";
         createTable += "  intcol " + test.type + "\n";
-        createTable += ") WITH (\n" +
-                " partition_by_hash_columns = ARRAY['id'],\n" +
-                " partition_by_hash_buckets = 2\n" +
-                ")";
+        createTable += ")";
 
         queryRunner.execute(dropTable);
         queryRunner.execute(createTable);

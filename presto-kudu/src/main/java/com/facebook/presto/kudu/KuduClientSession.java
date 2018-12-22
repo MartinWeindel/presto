@@ -56,6 +56,7 @@ import org.apache.kudu.client.PartialRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -421,14 +422,23 @@ public class KuduClientSession
 
         RangePartitionDefinition rangePartitionDefinition = null;
         PartitionDesign partitionDesign = KuduTableProperties.getPartitionDesign(properties);
+        boolean hasPartitionDesign = false;
         if (partitionDesign.getHash() != null) {
             for (HashPartitionDefinition partition : partitionDesign.getHash()) {
                 options.addHashPartitions(partition.getColumns(), partition.getBuckets());
+                hasPartitionDesign = true;
             }
         }
         if (partitionDesign.getRange() != null) {
             rangePartitionDefinition = partitionDesign.getRange();
             options.setRangePartitionColumns(rangePartitionDefinition.getColumns());
+            hasPartitionDesign = true;
+        }
+        if (!hasPartitionDesign) {
+            // Add dummy range partition (without range partitions).
+            // This will create a table with a single partition.
+            String firstColumn = schema.getColumnByIndex(0).getName();
+            options.setRangePartitionColumns(Collections.singletonList(firstColumn));
         }
 
         List<RangePartition> rangePartitions = KuduTableProperties.getRangePartitions(properties);
